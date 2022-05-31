@@ -1,0 +1,4 @@
+extends Node
+
+enum {KING,QUEEN,BISHOP,KNIGHT,ROOK,PAWN}
+enum {BLACK, WHITE}
