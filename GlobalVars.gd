@@ -1,11 +1,14 @@
 extends Node
 
 enum {KING,QUEEN,BISHOP,KNIGHT,ROOK,PAWN}
-enum {BLACK, WHITE}
+enum {WHITE, BLACK}
 
-export (PackedScene) var piece
+export (PackedScene) var pieceScene
 
-export (Array, PackedScene) var createdPieces
+export (Array, PackedScene) var pieces
+
+const files = "abcdefgh"
+const ranks = [1,2,3,4,5,6,7,8]
 
 var g_spriteWidth = 16;
 var g_boardWidth = g_spriteWidth*8;
@@ -17,38 +20,25 @@ var g_magentaMask = Color("e500ff");
 
 func parseCoordinate(coord):
 	var v2 = Vector2.ZERO
-	match[coord[0]]:
-		["a"]:v2.x=g_spriteWidth*0*g_scale
-		["b"]:v2.x=g_spriteWidth*1*g_scale
-		["c"]:v2.x=g_spriteWidth*2*g_scale
-		["d"]:v2.x=g_spriteWidth*3*g_scale
-		["e"]:v2.x=g_spriteWidth*4*g_scale
-		["f"]:v2.x=g_spriteWidth*5*g_scale
-		["g"]:v2.x=g_spriteWidth*6*g_scale
-		["h"]:v2.x=g_spriteWidth*7*g_scale
+	v2.x = files.find(coord[0])*g_spriteWidth*g_scale
 	v2.y = -(int(coord[1])-1)*g_spriteWidth*g_scale
 	v2+=Vector2(-1,1)*g_boardWidth/2*g_scale
 	v2+=Vector2(1,-1)*g_spriteWidth/2*g_scale
-	
 	return v2
 
-
+func convertIndex(f,r):
+	if(f<0 or f>7) or (r<0 or r>7): return ""
+	return files[f]+String(ranks[r])
 
 func getNearestSquare(mouse):
 	mouse-=get_viewport().size/2
-	var minDistance = g_spriteWidth*g_scale;
-	var result = ""
-	for r in range(1,9):
-		for f in "abcdefgh":
-			var dist = parseCoordinate(f+String(r)).distance_to(mouse)
-			if dist < minDistance:
-				minDistance = dist
-				result = f+String(r)
-	return result
+	mouse/=g_spriteWidth*g_scale
+	mouse+=Vector2.ONE*g_scale
+	if (mouse.x>8 or mouse.y>8) or (mouse.x<0 or mouse.y<0): return ""
+	return convertIndex(int(mouse.x),ranks.size()-int(mouse.y)-1)
 
 func parseFEN(fen):
-	var files = "abcdefgh"
-	var pieces = "KQBNRP"
+	var pieceSTR = "KQBNRP"
 	var arr = fen.split('/')
 	var rank=8
 	for a in arr:
@@ -65,18 +55,23 @@ func parseFEN(fen):
 				color=WHITE
 			if (c == c.to_lower()):
 				color=BLACK
-			type = pieces.find(c.to_upper())
-			pos = files[file-1]+String(rank)
+			type = pieceSTR.find(c.to_upper())
+			pos = convertIndex(file-1,rank-1)
 			createPiece(color,type,pos);
 			file+=1
 		rank-=1
 
 func createPiece(color,type,pos):
-	var p = piece.instance()
-	p.setPieceColor(color)
+	var p = pieceScene.instance()
+	p.setColor(color)
 	p.setPieceType(type)
-	p.position = GlobalVars.parseCoordinate(pos)
+	p.position = parseCoordinate(pos)
 	p.occupiedSquare = pos
-	createdPieces.push_back(p)
+	pieces.push_back(p)
 
+func isSquareOccupied(query):
+	for piece in pieces:
+		if piece.occupiedSquare == query:
+			return piece
+	return null
 

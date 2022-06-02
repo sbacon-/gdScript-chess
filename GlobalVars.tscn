@@ -5,4 +5,4 @@
 
 [node name="GlobalVars" type="Node"]
 script = ExtResource( 1 )
-piece = ExtResource( 2 )
+pieceScene = ExtResource( 2 )
