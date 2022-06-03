@@ -14,9 +14,15 @@ var g_spriteWidth = 16;
 var g_boardWidth = g_spriteWidth*8;
 var g_scale = 4;
 
+var g_graveWhite = Vector2(1.1,-1) * g_boardWidth/2 * g_scale 
+var g_graveBlack = Vector2(1.1, 1) * g_boardWidth/2 * g_scale
+
 var g_whiteColor = Color(0.8,0.8,0.8,1);
 var g_blackColor = Color(0.2,0.2,0.2,1);
 var g_magentaMask = Color("e500ff");
+
+var enPassant = ""
+var enPassantTarget = ""
 
 func parseCoordinate(coord):
 	var v2 = Vector2.ZERO
@@ -74,4 +80,12 @@ func isSquareOccupied(query):
 		if piece.occupiedSquare == query:
 			return piece
 	return null
+
+func graveYard(color):
+	if(color == WHITE): return g_graveWhite
+	if(color == BLACK): return g_graveBlack
+
+func clearEnPassant():
+	enPassant = ""
+	enPassantTarget = ""
 

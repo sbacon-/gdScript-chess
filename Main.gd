@@ -9,16 +9,22 @@ func setupBoard(fen):
 	GlobalVars.parseFEN(fen);
 	for piece in GlobalVars.pieces:
 		add_child(piece)
-		piece.connect("pieceMoved",self,"_on_Piece_Moved")
+		piece.connect("pieceMoved",self,"_on_Piece_Moved",[piece])
 	setPlayerTurn(GlobalVars.WHITE)
 
-func setPlayerTurn(globalColor):
-	activePlayer = globalColor
+func setPlayerTurn(color):
+	activePlayer = color
 	for piece in GlobalVars.pieces:
-		if piece.getColor() == globalColor: piece.set_process(true)
-		else: piece.set_process(false)
+		if piece.getColor() == color: piece.unlock()
+		else: piece.lock()
 
-func _on_Piece_Moved():
+func _on_Piece_Moved(piece):
+	var occupant = GlobalVars.isSquareOccupied(piece.targetSquare)
+	if(occupant != null): occupant.capture()
+	#CAPTURE EN PASSANT
+	if(piece.getPieceType()==GlobalVars.PAWN and piece.targetSquare==GlobalVars.enPassant):
+		GlobalVars.isSquareOccupied(GlobalVars.enPassantTarget).capture()
 	if activePlayer == GlobalVars.WHITE : activePlayer=GlobalVars.BLACK
 	else: activePlayer = GlobalVars.WHITE
 	setPlayerTurn(activePlayer)
+
