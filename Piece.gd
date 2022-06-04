@@ -32,7 +32,7 @@ func handleMovement():
 			if(targetSquare == "b"+occupiedSquare[1]):
 				targetSquare = "0-0-0"
 	elif targetSquare!="":
-		if calculateLegalMoves().find(targetSquare)!=-1:
+		if calculateLegalMoves(false).find(targetSquare)!=-1:
 			emit_signal("pieceMoved")
 			moveTo(targetSquare)
 		targetSquare = ""
@@ -67,7 +67,7 @@ func capture():
 	position = GlobalVars.graveYard(getColor())
 	scale /= 2
 
-func calculateLegalMoves():
+func calculateLegalMoves(onlyAttack):
 	var moves = []
 	var file = GlobalVars.files.find(occupiedSquare[0])
 	var rank = GlobalVars.ranks.find(int(occupiedSquare[1]))
@@ -107,32 +107,28 @@ func calculateLegalMoves():
 			pattern += [[0,1],[0,-1],[-1,0],[1,0]]
 			extendedMovement = true
 		[GlobalVars.PAWN]:
+			var diagonalAttacks
 			if getColor() == GlobalVars.WHITE:
 				pattern += [[0,1]]
-				if (occupiedSquare[1]=="2" and\
-				GlobalVars.isSquareOccupied(GlobalVars.convertIndex(file,rank+1))==null): pattern += [[0,2]]
-				#ATTACK DIAGONALLY
-				current = GlobalVars.convertIndex(file-1,rank+1)
-				occupant = GlobalVars.isSquareOccupied(current)
-				if current != "" and ((occupant != null and occupant.getColor() != getColor()) or current==GlobalVars.enPassant):
-					moves.push_back(current) 
-				current = GlobalVars.convertIndex(file+1,rank+1)
-				occupant = GlobalVars.isSquareOccupied(current)
-				if current != "" and ((occupant != null and occupant.getColor() != getColor()) or current==GlobalVars.enPassant):
-					moves.push_back(current) 
+				if (occupiedSquare[1]=="2"): pattern += [[0,2]]
+				diagonalAttacks = [[-1,1],[1,1]]
 			if getColor() == GlobalVars.BLACK:
 				pattern += [[0,-1]]
-				if (occupiedSquare[1]=="7" and\
-				GlobalVars.isSquareOccupied(GlobalVars.convertIndex(file,rank-1))==null): pattern += [[0,-2]]
-				#ATTACK DIAGONALLY
-				current = GlobalVars.convertIndex(file-1,rank-1)
-				occupant = GlobalVars.isSquareOccupied(current)
-				if current != "" and ((occupant != null and occupant.getColor() != getColor()) or current==GlobalVars.enPassant):
-					moves.push_back(current) 
-				current = GlobalVars.convertIndex(file+1,rank-1)
+				if (occupiedSquare[1]=="7"): pattern += [[0,-2]]
+				diagonalAttacks = [[-1,-1],[1,-1]]
+			for d in diagonalAttacks:
+				current = GlobalVars.convertIndex(file+d[0],rank+d[1])
 				occupant = GlobalVars.isSquareOccupied(current)
 				if current != "" and ((occupant != null and occupant.getColor() != getColor()) or current==GlobalVars.enPassant):
 					moves.push_back(current)
+			for p in pattern:
+				current = GlobalVars.convertIndex(file+p[0],rank+p[1])
+				occupant = GlobalVars.isSquareOccupied(current)
+				if current != "" and occupant == null:
+					moves.push_back(current)
+			if(!onlyAttack):
+				moves = GlobalVars.simulateMoves(self,moves) #Determine if a move would leave the king in check
+			return moves
 	if !extendedMovement:
 		for pat in pattern:
 			current = GlobalVars.convertIndex(file+pat[0],rank+pat[1])
@@ -151,6 +147,8 @@ func calculateLegalMoves():
 				elif(occupant!=null and occupant.getColor()!=getColor()): moves.push_back(current)
 				pat[0]+=patCurrent[0]
 				pat[1]+=patCurrent[1]
+	if(!onlyAttack):
+		moves = GlobalVars.simulateMoves(self,moves) #Determine if a move would leave the king in check
 	return moves
 
 #PIECE INITIALIZATION

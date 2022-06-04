@@ -7,6 +7,7 @@ export (PackedScene) var pieceScene
 
 export (Array, PackedScene) var pieces
 
+const pieceSTR = "KQBNRP"
 const files = "abcdefgh"
 const ranks = [1,2,3,4,5,6,7,8]
 
@@ -44,7 +45,6 @@ func getNearestSquare(mouse):
 	return convertIndex(int(mouse.x),ranks.size()-int(mouse.y)-1)
 
 func parseFEN(fen):
-	var pieceSTR = "KQBNRP"
 	var arr = fen.split('/')
 	var rank=8
 	for a in arr:
@@ -89,3 +89,29 @@ func clearEnPassant():
 	enPassant = ""
 	enPassantTarget = ""
 
+func simulateMoves(piece,moves):
+	var newmoves = []
+	var currentSquare = piece.occupiedSquare;
+	for m in moves:
+		piece.occupiedSquare = m
+		var opponentsMoves = []
+		for p in pieces:
+			if (p.getColor() != piece.getColor() and p.occupiedSquare != m):
+				opponentsMoves+=p.calculateLegalMoves(true)
+		if(!isKingInCheck(opponentsMoves,piece.getColor())):
+			newmoves.push_back(m)
+	piece.occupiedSquare = currentSquare;
+	return newmoves
+
+func isKingInCheck(moves, color):
+	var check = false
+	var kingLocation = findKing(color).occupiedSquare
+	for m in moves:
+		if(kingLocation == m):
+			check = true
+	return check
+
+func findKing(color):
+	for p in pieces:
+		if(p.getPieceType()==KING and p.getColor()==color): return p
+	return null
