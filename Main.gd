@@ -4,6 +4,7 @@ var activePlayer = GlobalVars.WHITE
 
 func _ready():
 	setupBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
+	$Camera2D/MoveInput.grab_focus()
 
 func setupBoard(fen):
 	GlobalVars.parseFEN(fen);
@@ -32,16 +33,12 @@ func parseMove(text):
 		if(pType.length()==2): identifier = pType[1]
 	var candidates = []
 	for p in GlobalVars.pieces:
-		if(p.getPieceType()==pieceType and p.getColor()==activePlayer and (p.calculateLegalMoves(false).find(coordinates)!=-1)):
-			candidates.push_back(p)
-	print(candidates)
-	if (identifier != ""):
-		var newCandidates = []
-		for c in candidates:
-			print(c.occupiedSquare)
-			if(c.occupiedSquare[0] == identifier or c.occupiedSquare[1] == identifier):
-				newCandidates.push_back(c)
-		candidates = newCandidates
+		if p.getPieceType()==pieceType and p.getColor()==activePlayer\
+		and p.calculateLegalMoves(false).find(coordinates) != -1:
+			if(identifier==""):
+				candidates.push_back(p)
+			elif(p.occupiedSquare[0]==identifier or p.occupiedSquare[1]==identifier):
+				candidates.push_back(p)
 	if (candidates.size()==1):
 		candidates[0].targetSquare = coordinates
 		$Camera2D/MoveInput.clear()

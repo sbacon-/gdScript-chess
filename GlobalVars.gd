@@ -98,6 +98,23 @@ func simulateMoves(piece,moves):
 		for p in pieces:
 			if (p.getColor() != piece.getColor() and p.occupiedSquare != m):
 				opponentsMoves+=p.calculateLegalMoves(true)
+		if(m == "0-0"):
+			piece.occupiedSquare = currentSquare;
+			var castleCheck = [\
+			"e"+currentSquare[1],"f"+currentSquare[1],"g"+currentSquare[1]]
+			print(castleCheck)
+			if(!isKingInCheck(castleCheck,piece.getColor())):
+				newmoves.push_back(m)
+			piece.occupiedSquare = m
+			continue;
+		if(m == "0-0-0"):
+			piece.occupiedSquare = currentSquare;
+			var castleCheck = [\
+			"e"+currentSquare[1],"d"+currentSquare[1],"c"+currentSquare[1]]
+			if(!isKingInCheck(castleCheck,piece.getColor())):
+				newmoves.push_back(m)
+			piece.occupiedSquare = m
+			continue;
 		if(!isKingInCheck(opponentsMoves,piece.getColor())):
 			newmoves.push_back(m)
 	piece.occupiedSquare = currentSquare;
