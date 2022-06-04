@@ -18,6 +18,34 @@ func setPlayerTurn(color):
 		if piece.getColor() == color: piece.unlock()
 		else: piece.lock()
 
+func parseMove(text):
+	text = text.replace("x","") #Captures can be implied
+	var coordinates = text.substr(text.length()-2)
+	var pType = text.rstrip(coordinates)
+	var pieceType = GlobalVars.PAWN
+	var identifier = ""
+	if(pType.length()>0):
+		pieceType = GlobalVars.pieceSTR.find(pType[0])
+		if(pieceType == -1):
+			pType = "P"+pType
+			pieceType = GlobalVars.PAWN
+		if(pType.length()==2): identifier = pType[1]
+	var candidates = []
+	for p in GlobalVars.pieces:
+		if(p.getPieceType()==pieceType and p.getColor()==activePlayer and (p.calculateLegalMoves(false).find(coordinates)!=-1)):
+			candidates.push_back(p)
+	print(candidates)
+	if (identifier != ""):
+		var newCandidates = []
+		for c in candidates:
+			print(c.occupiedSquare)
+			if(c.occupiedSquare[0] == identifier or c.occupiedSquare[1] == identifier):
+				newCandidates.push_back(c)
+		candidates = newCandidates
+	if (candidates.size()==1):
+		candidates[0].targetSquare = coordinates
+		$Camera2D/MoveInput.clear()
+
 func _on_Piece_Moved(piece):
 	var occupant = GlobalVars.isSquareOccupied(piece.targetSquare)
 	if(occupant != null): occupant.capture()
@@ -28,3 +56,6 @@ func _on_Piece_Moved(piece):
 	else: activePlayer = GlobalVars.WHITE
 	setPlayerTurn(activePlayer)
 
+
+func _on_MoveInput_text_changed(new_text):
+	parseMove(new_text)

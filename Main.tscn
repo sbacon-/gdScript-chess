@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://Board.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Main.gd" type="Script" id=2]
+[ext_resource path="res://MoveInput.tscn" type="PackedScene" id=3]
 
 [node name="Main" type="Node2D"]
 script = ExtResource( 2 )
@@ -14,3 +15,8 @@ __meta__ = {
 [node name="Camera2D" type="Camera2D" parent="."]
 rotating = true
 current = true
+
+[node name="MoveInput" parent="Camera2D" instance=ExtResource( 3 )]
+margin_top = 265.0
+
+[connection signal="text_changed" from="Camera2D/MoveInput" to="." method="_on_MoveInput_text_changed"]
