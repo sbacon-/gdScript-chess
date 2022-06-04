@@ -29,7 +29,7 @@ func handleMovement():
 		if(pieceType == GlobalVars.KING and !moved):
 			if(targetSquare == "g"+occupiedSquare[1]):
 				targetSquare = "0-0"
-			if(targetSquare == "b"+occupiedSquare[1]):
+			if(targetSquare == "c"+occupiedSquare[1]):
 				targetSquare = "0-0-0"
 	elif targetSquare!="":
 		if calculateLegalMoves(false).find(targetSquare)!=-1:
@@ -48,6 +48,7 @@ func moveTo(target):
 	if(target == "0-0-0"):
 		moveTo("c"+String(occupiedSquare[1]))
 		GlobalVars.isSquareOccupied("a"+String(occupiedSquare[1])).moveTo("d"+String(occupiedSquare[1]))
+		return
 	#EN PASSANT TARGET
 	GlobalVars.clearEnPassant()
 	if(pieceType == GlobalVars.PAWN and !moved):
@@ -149,6 +150,7 @@ func calculateLegalMoves(onlyAttack):
 				pat[1]+=patCurrent[1]
 	if(!onlyAttack):
 		moves = GlobalVars.simulateMoves(self,moves) #Determine if a move would leave the king in check
+		print(moves)
 	return moves
 
 #PIECE INITIALIZATION
