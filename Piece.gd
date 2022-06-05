@@ -31,6 +31,9 @@ func handleMovement():
 				targetSquare = "0-0"
 			if(targetSquare == "c"+occupiedSquare[1]):
 				targetSquare = "0-0-0"
+	elif targetSquare=="OOB":
+		position = GlobalVars.parseCoordinate(occupiedSquare)
+		targetSquare = ""
 	elif targetSquare!="":
 		if calculateLegalMoves(false).find(targetSquare)!=-1:
 			emit_signal("pieceMoved")
@@ -108,8 +111,8 @@ func calculateLegalMoves(onlyAttack):
 			pattern += [[0,1],[0,-1],[-1,0],[1,0]]
 			extendedMovement = true
 		[GlobalVars.PAWN]:
-			var diagonalAttacks
-			if getColor() == GlobalVars.WHITE:
+			var diagonalAttacks = [[0,0]]
+			if (getColor() == GlobalVars.WHITE):
 				pattern += [[0,1]]
 				if (occupiedSquare[1]=="2"): pattern += [[0,2]]
 				diagonalAttacks = [[-1,1],[1,1]]
@@ -117,6 +120,11 @@ func calculateLegalMoves(onlyAttack):
 				pattern += [[0,-1]]
 				if (occupiedSquare[1]=="7"): pattern += [[0,-2]]
 				diagonalAttacks = [[-1,-1],[1,-1]]
+			if (GlobalVars.files[0]=="h"):
+				for p in pattern:
+					p[1]*=-1
+				for d in diagonalAttacks:
+					d[1]*=-1
 			for d in diagonalAttacks:
 				current = GlobalVars.convertIndex(file+d[0],rank+d[1])
 				occupant = GlobalVars.isSquareOccupied(current)
@@ -150,7 +158,6 @@ func calculateLegalMoves(onlyAttack):
 				pat[1]+=patCurrent[1]
 	if(!onlyAttack):
 		moves = GlobalVars.simulateMoves(self,moves) #Determine if a move would leave the king in check
-		print(moves)
 	return moves
 
 #PIECE INITIALIZATION

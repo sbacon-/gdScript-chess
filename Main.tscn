@@ -19,4 +19,14 @@ current = true
 [node name="MoveInput" parent="Camera2D" instance=ExtResource( 3 )]
 margin_top = 265.0
 
+[node name="Button" type="Button" parent="Camera2D"]
+anchor_top = 0.5
+anchor_bottom = 0.5
+margin_left = -488.0
+margin_top = -287.0
+margin_right = -452.0
+margin_bottom = -255.0
+text = "Flip"
+
 [connection signal="text_changed" from="Camera2D/MoveInput" to="." method="_on_MoveInput_text_changed"]
+[connection signal="pressed" from="Camera2D/Button" to="." method="_on_Button_pressed"]

@@ -8,8 +8,8 @@ export (PackedScene) var pieceScene
 export (Array, PackedScene) var pieces
 
 const pieceSTR = "KQBNRP"
-const files = "abcdefgh"
-const ranks = [1,2,3,4,5,6,7,8]
+var files = "abcdefgh"
+var ranks = [1,2,3,4,5,6,7,8]
 
 var g_spriteWidth = 16;
 var g_boardWidth = g_spriteWidth*8;
@@ -28,7 +28,7 @@ var enPassantTarget = ""
 func parseCoordinate(coord):
 	var v2 = Vector2.ZERO
 	v2.x = files.find(coord[0])*g_spriteWidth*g_scale
-	v2.y = -(int(coord[1])-1)*g_spriteWidth*g_scale
+	v2.y = -ranks.find(int(coord[1]))*g_spriteWidth*g_scale
 	v2+=Vector2(-1,1)*g_boardWidth/2*g_scale
 	v2+=Vector2(1,-1)*g_spriteWidth/2*g_scale
 	return v2
@@ -41,7 +41,7 @@ func getNearestSquare(mouse):
 	mouse-=get_viewport().size/2
 	mouse/=g_spriteWidth*g_scale
 	mouse+=Vector2.ONE*g_scale
-	if (mouse.x>8 or mouse.y>8) or (mouse.x<0 or mouse.y<0): return ""
+	if (mouse.x>8 or mouse.y>8) or (mouse.x<0 or mouse.y<0): return "OOB"
 	return convertIndex(int(mouse.x),ranks.size()-int(mouse.y)-1)
 
 func parseFEN(fen):
@@ -76,6 +76,7 @@ func createPiece(color,type,pos):
 	pieces.push_back(p)
 
 func isSquareOccupied(query):
+	#Returns the piece at a given coordinate ("a1")
 	for piece in pieces:
 		if piece.occupiedSquare == query:
 			return piece
@@ -89,31 +90,44 @@ func clearEnPassant():
 	enPassant = ""
 	enPassantTarget = ""
 
+func flipBoard():
+	var newfiles = ""
+	for f in files:
+		newfiles = newfiles.insert(0,f)
+	files=newfiles
+	var newranks = []
+	for r in ranks:
+		newranks.push_front(r)
+	ranks=newranks
+	for p in pieces:
+		p.position = GlobalVars.parseCoordinate(p.occupiedSquare)
+
 func simulateMoves(piece,moves):
 	var newmoves = []
 	var currentSquare = piece.occupiedSquare;
 	for m in moves:
 		piece.occupiedSquare = m
+		#List all of opponents legal moves removing the piece if it would be captured by move m
 		var opponentsMoves = []
 		for p in pieces:
 			if (p.getColor() != piece.getColor() and p.occupiedSquare != m):
 				opponentsMoves+=p.calculateLegalMoves(true)
+		#Cannot castle OUT OF, THROUGH, or INTO check
 		if(m == "0-0"):
-			piece.occupiedSquare = currentSquare;
-			var castleCheck = [\
-			"e"+currentSquare[1],"f"+currentSquare[1],"g"+currentSquare[1]]
-			print(castleCheck)
-			if(!isKingInCheck(castleCheck,piece.getColor())):
-				newmoves.push_back(m)
-			piece.occupiedSquare = m
+			var castles=true;
+			var castleCheck = ["e"+currentSquare[1],"f"+currentSquare[1],"g"+currentSquare[1]]
+			for c in castleCheck:
+				if opponentsMoves.find(c) != -1:
+					castles=false
+			if castles: newmoves.push_back(m)
 			continue;
 		if(m == "0-0-0"):
-			piece.occupiedSquare = currentSquare;
-			var castleCheck = [\
-			"e"+currentSquare[1],"d"+currentSquare[1],"c"+currentSquare[1]]
-			if(!isKingInCheck(castleCheck,piece.getColor())):
-				newmoves.push_back(m)
-			piece.occupiedSquare = m
+			var castles
+			var castleCheck = ["e"+currentSquare[1],"d"+currentSquare[1],"c"+currentSquare[1]]
+			for c in castleCheck:
+				if opponentsMoves.find(c) != -1:
+					castles=false
+			if castles: newmoves.push_back(m)
 			continue;
 		if(!isKingInCheck(opponentsMoves,piece.getColor())):
 			newmoves.push_back(m)
@@ -121,6 +135,7 @@ func simulateMoves(piece,moves):
 	return newmoves
 
 func isKingInCheck(moves, color):
+	#This function will take a list of opponents moves and determine if the king is in check
 	var check = false
 	var kingLocation = findKing(color).occupiedSquare
 	for m in moves:
@@ -129,6 +144,6 @@ func isKingInCheck(moves, color):
 	return check
 
 func findKing(color):
+	#Returns the king of a specified color
 	for p in pieces:
 		if(p.getPieceType()==KING and p.getColor()==color): return p
-	return null

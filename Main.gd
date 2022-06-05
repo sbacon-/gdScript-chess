@@ -56,3 +56,7 @@ func _on_Piece_Moved(piece):
 
 func _on_MoveInput_text_changed(new_text):
 	parseMove(new_text)
+
+
+func _on_Button_pressed():
+	GlobalVars.flipBoard()
