@@ -9,6 +9,7 @@ var pieceColor = GlobalVars.WHITE
 var clicked = false
 var locked = true
 var moved = false
+var promoteType = null
 
 var occupiedSquare = "e2"
 var targetSquare = ""
@@ -17,6 +18,15 @@ func _process(_delta):
 	handleMovement()
 
 func handleMovement():
+	if(promoteType!=null):
+		var options = [GlobalVars.QUEEN,GlobalVars.ROOK,GlobalVars.BISHOP,GlobalVars.KNIGHT]
+		if(options.find(promoteType)!=-1):
+			pieceType = promoteType
+			promoteType = null
+			$PromotionWindow.visible=false
+			updateSprite($Sprite,pieceType)
+			emit_signal("pieceMoved")
+		return
 	if(clicked):
 		position=get_viewport().get_mouse_position()
 		position.x -= get_viewport_rect().size.x/2
@@ -36,8 +46,8 @@ func handleMovement():
 		targetSquare = ""
 	elif targetSquare!="":
 		if calculateLegalMoves(false).find(targetSquare)!=-1:
-			emit_signal("pieceMoved")
 			moveTo(targetSquare)
+			if(promoteType==null):emit_signal("pieceMoved")
 		targetSquare = ""
 		z_index = 0;
 		position = GlobalVars.parseCoordinate(occupiedSquare)
@@ -52,15 +62,24 @@ func moveTo(target):
 		moveTo("c"+String(occupiedSquare[1]))
 		GlobalVars.isSquareOccupied("a"+String(occupiedSquare[1])).moveTo("d"+String(occupiedSquare[1]))
 		return
-	#EN PASSANT TARGET
-	GlobalVars.clearEnPassant()
-	if(pieceType == GlobalVars.PAWN and !moved):
-		if(target[1] == "4"):
+	if(pieceType == GlobalVars.PAWN):
+		#CAPTURE EN PASSANT
+		if(target==GlobalVars.enPassant):
+			GlobalVars.isSquareOccupied(GlobalVars.enPassantTarget).capture()
+		GlobalVars.clearEnPassant()
+		#SET EN PASSANT TARGET
+		if(target[1] == "4" and !moved):#White Pieces moving to the 4th rank
 			GlobalVars.enPassant = target[0]+"3"
 			GlobalVars.enPassantTarget = target
-		if(target[1] == "5"):
+		if(target[1] == "5" and !moved):#Black Pieces moving to the 5th rank
 			GlobalVars.enPassant = target[0]+"6"
 			GlobalVars.enPassantTarget = target
+		#PAWN PROMOTION
+		if(target[1] == "1" or target[1] == "8"):
+			if(promoteType == null): promote()
+	#CAPTURES
+	var occupant = GlobalVars.isSquareOccupied(target)
+	if(occupant != null): occupant.capture()
 	moved = true
 	occupiedSquare = target
 	position = GlobalVars.parseCoordinate(occupiedSquare)
@@ -70,6 +89,11 @@ func capture():
 	$Area2D.queue_free()
 	position = GlobalVars.graveYard(getColor())
 	scale /= 2
+
+func promote():
+	print("promote")
+	$PromotionWindow.visible=true
+	promoteType = GlobalVars.PAWN
 
 func calculateLegalMoves(onlyAttack):
 	var moves = []
@@ -163,7 +187,14 @@ func calculateLegalMoves(onlyAttack):
 #PIECE INITIALIZATION
 func setPieceType(p):
 	pieceType = p
-	updateSprite()
+	if(p != GlobalVars.PAWN):
+		$PromotionWindow.queue_free()
+	else:
+		var promotes = [$PromotionWindow/Queen/Sprite,$PromotionWindow/Bishop/Sprite,$PromotionWindow/Knight/Sprite,$PromotionWindow/Rook/Sprite]
+		for i in range(0,promotes.size()):
+			updateSprite(promotes[i],i+1)
+		$PromotionWindow.visible = false
+	updateSprite($Sprite,pieceType)
 func setColor(c):
 	pieceColor = c
 func getPieceType():
@@ -171,11 +202,11 @@ func getPieceType():
 func getColor():
 	return pieceColor
 
-func updateSprite():
+func updateSprite(sprite, type):
 	var c
 	if pieceColor == GlobalVars.BLACK : c=GlobalVars.g_blackColor;
 	else: c=GlobalVars.g_whiteColor;
-	var i = textures[pieceType].get_data();
+	var i = textures[type].get_data();
 	i.lock();
 	for x in i.get_width():
 		for y in i.get_height():
@@ -183,7 +214,7 @@ func updateSprite():
 				i.set_pixel(x,y,c)
 	var texture = ImageTexture.new()
 	texture.create_from_image(i,1)
-	$Sprite.texture = texture
+	sprite.texture = texture
 	scale = Vector2.ONE*GlobalVars.g_scale
 
 #DISABLES CLICKING WHEN IT IS NOT YOUR TURN
@@ -202,3 +233,11 @@ func _on_Area2D_input_event(_viewport, event, _shape_idx):
 	and !event.is_pressed():
 		clicked = false;
 
+func _on_Queen_pressed():
+	promoteType = GlobalVars.QUEEN
+func _on_Rook_pressed():
+	promoteType = GlobalVars.ROOK
+func _on_Bishop_pressed():
+	promoteType = GlobalVars.BISHOP
+func _on_Knight_pressed():
+	promoteType = GlobalVars.KNIGHT
