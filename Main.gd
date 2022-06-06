@@ -2,8 +2,15 @@ extends Node2D
 
 var activePlayer = GlobalVars.WHITE
 
+var moveQueue = []
+
 func _ready():
+	reset()
+
+func reset():
 	setupBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
+	activePlayer = GlobalVars.WHITE
+	moveQueue.clear()
 	$Camera2D/MoveInput.grab_focus()
 
 func setupBoard(fen):
@@ -18,66 +25,64 @@ func setPlayerTurn(color):
 		if piece.getColor() == color: piece.unlock()
 		else: piece.lock()
 
-func parseMove(text): 
-	#HANDLES TYPED MOVES
-	#Captures,Check, & Checkmate are implied
-	var implied = ["x","+","#"]
+func parseMove(text):
+	if GlobalVars.isSquareOccupied(text.substr(0,2))!=null:
+		parseUCI(text)
+	else:
+		parseSAN(text)
+
+func parseUCI(text):
+	var from = text.substr(0,2)
+	var to = text.substr(2,2)
+	var promote = text.substr(text.length()-1)
+	
+	var piece = GlobalVars.isSquareOccupied(from)
+	if piece==null: return
+	
+	if piece.calculateLegalMoves(false).find(to)==-1: return
+	
+	if piece.getPieceType()==GlobalVars.PAWN and (to[1]=="1" or to[1]=="8"):
+		var options = ["Q","R","B","N"]
+		promote = promote.to_upper()
+		if options.find(promote)==-1: return
+		piece.promoType = GlobalVars.pieceSTR.find(promote)
+		piece.moveTo(to)
+	
+	$Camera2D/MoveInput.clear()
+	piece.targetSquare = to
+	moveQueue.push_back(text)
+	print(moveQueue)
+
+func parseSAN(text):
+	var implied = ["x","+","#","="]
 	for i in implied:
 		text = text.replace(i,"")
-	var coordinates = text.substr(text.length()-2)
-	#Handles Pawn promotion via =Q
-	var promotionType = null
-	if coordinates.substr(0,1) == "=":
-		var options = ["Q","R","B","N"]
-		if(options.find(coordinates.substr(1,1)) != -1):
-			promotionType = GlobalVars.pieceSTR.find(coordinates.substr(1,1))
-		else: return
-		text = text.rstrip(coordinates)
-		coordinates = text.substr(text.length()-2)
-	#Determines Piece Type and Identifier
-	var pType = text.rstrip(coordinates)
-	var pieceType = GlobalVars.PAWN
-	var identifier = ""
-	if(pType.length()>0):
-		pieceType = GlobalVars.pieceSTR.find(pType[0])
-		if(pieceType == -1):#Default to PAWN if no pieceType is provided
-			pType = "P"+pType
-			pieceType = GlobalVars.PAWN
-		if(pType.length()>1): identifier = pType.substr(1)
-	#Create a list of pieces that can move to the given coordinate
+	var from
+	var to
+	var promote = text.substr(text.length()-1)
+	if(int(promote)==0): to = text.substr(text.length()-3,2)
+	else: 
+		to = text.substr(text.length()-2,2)
+		promote = ""
 	var candidates = []
+	var info = text.rstrip(promote)
+	info = info.rstrip(to)
+	if GlobalVars.pieceSTR.find(info.substr(0,1)) == -1:
+		info = "P"+info
 	for p in GlobalVars.pieces:
-		if p.getPieceType()==pieceType and p.getColor()==activePlayer\
-		and p.calculateLegalMoves(false).find(coordinates) != -1:
+		if  p.getColor()==activePlayer and p.getPieceType()==GlobalVars.pieceSTR.find(info.substr(0,1)):
+			if (p.calculateLegalMoves(false).find(to)!=-1):
 				candidates.push_back(p)
-	#If more than one peice can get to a coordinate look for an identifier(N'b'd2)
-	if (candidates.size()>1 and identifier != ""):
+	info = info.substr(1)
+	if candidates.size()>1 and !info.empty():
 		var newCandidates = []
-		if(identifier.length()==1):
-			#Check ranks and files
-			for c in candidates:
-				if(c.occupiedSquare[0]==identifier or c.occupiedSquare[1]==identifier):
-					newCandidates.push_back(c)
-			candidates = newCandidates
-		if(identifier.length()>1):
-			#Cases where more than one identifier is needed (N'g6'e5)
-			#(Only useful if there are 3 or more knights/queens on the board)
-			for c in candidates:
-				if(c.occupiedSquare==identifier):
-					newCandidates.push_back(c)
-			candidates = newCandidates
-	#There should only be one candidate remaining if the move is valid
-	if (candidates.size()==1):
-		var c = candidates[0]
-		#Handle Pawn Promotion
-		if c.getPieceType()==GlobalVars.PAWN and (coordinates[1]=="8" or coordinates[1]=="1"):
-			if(promotionType!=null):
-				c.promoteType = promotionType
-				c.moveTo(coordinates)
-				$Camera2D/MoveInput.clear()
-			return
-		c.targetSquare = coordinates
-		$Camera2D/MoveInput.clear()
+		for c in candidates:
+			if c.occupiedSquare[0]==info or c.occupiedSquare[1]==info or c.occupiedSquare==info:
+				newCandidates.push_back(c)
+		candidates=newCandidates
+	if candidates.size()==1:
+		from = candidates[0].occupiedSquare
+		parseUCI(from+to+promote)
 
 func _on_Piece_Moved(piece):
 	#OPPONENTS TURN
@@ -86,6 +91,10 @@ func _on_Piece_Moved(piece):
 	setPlayerTurn(activePlayer)
 
 func _on_MoveInput_text_changed(new_text):
+	if new_text=="":return
+	if new_text.to_lower()=="reset":
+		reset()
+		$Camera2D/MoveInput.clear()
 	parseMove(new_text)
 
 func _on_Button_pressed():

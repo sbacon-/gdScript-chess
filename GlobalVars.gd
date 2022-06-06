@@ -45,6 +45,13 @@ func getNearestSquare(mouse):
 	return convertIndex(int(mouse.x),ranks.size()-int(mouse.y)-1)
 
 func parseFEN(fen):
+	var tempFlip = false
+	if(files[0]=="h"):
+		flipBoard()
+		tempFlip = true
+	for p in pieces:
+		p.queue_free()
+	pieces.clear()
 	var arr = fen.split('/')
 	var rank=8
 	for a in arr:
@@ -66,6 +73,7 @@ func parseFEN(fen):
 			createPiece(color,type,pos);
 			file+=1
 		rank-=1
+	if(tempFlip): flipBoard()
 
 func createPiece(color,type,pos):
 	var p = pieceScene.instance()

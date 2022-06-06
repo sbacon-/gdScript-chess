@@ -9,7 +9,7 @@ var pieceColor = GlobalVars.WHITE
 var clicked = false
 var locked = true
 var moved = false
-var promoteType = null
+var promoType = null
 
 var occupiedSquare = "e2"
 var targetSquare = ""
@@ -18,11 +18,11 @@ func _process(_delta):
 	handleMovement()
 
 func handleMovement():
-	if(promoteType!=null):
+	if(promoType!=null):
 		var options = [GlobalVars.QUEEN,GlobalVars.ROOK,GlobalVars.BISHOP,GlobalVars.KNIGHT]
-		if(options.find(promoteType)!=-1):
-			pieceType = promoteType
-			promoteType = null
+		if(options.find(promoType)!=-1):
+			pieceType = promoType
+			promoType = null
 			$PromotionWindow.visible=false
 			updateSprite($Sprite,pieceType)
 			emit_signal("pieceMoved")
@@ -35,33 +35,23 @@ func handleMovement():
 		position.y += GlobalVars.g_spriteWidth/2
 		z_index = 1;
 		targetSquare = GlobalVars.getNearestSquare(get_viewport().get_mouse_position())
-		#CHECK IF CASTLING
-		if(pieceType == GlobalVars.KING and !moved):
-			if(targetSquare == "g"+occupiedSquare[1]):
-				targetSquare = "0-0"
-			if(targetSquare == "c"+occupiedSquare[1]):
-				targetSquare = "0-0-0"
 	elif targetSquare=="OOB":
 		position = GlobalVars.parseCoordinate(occupiedSquare)
 		targetSquare = ""
 	elif targetSquare!="":
 		if calculateLegalMoves(false).find(targetSquare)!=-1:
 			moveTo(targetSquare)
-			if(promoteType==null):emit_signal("pieceMoved")
+			if(promoType==null):emit_signal("pieceMoved")
 		targetSquare = ""
 		z_index = 0;
 		position = GlobalVars.parseCoordinate(occupiedSquare)
 
 func moveTo(target):
 	#CASTLES
-	if(target == "0-0"):
-		moveTo("g"+String(occupiedSquare[1]))
+	if pieceType==GlobalVars.KING and !moved and target[0] == "g":
 		GlobalVars.isSquareOccupied("h"+String(occupiedSquare[1])).moveTo("f"+String(occupiedSquare[1]))
-		return
-	if(target == "0-0-0"):
-		moveTo("c"+String(occupiedSquare[1]))
+	if pieceType==GlobalVars.KING and !moved and target[0] == "c":
 		GlobalVars.isSquareOccupied("a"+String(occupiedSquare[1])).moveTo("d"+String(occupiedSquare[1]))
-		return
 	if(pieceType == GlobalVars.PAWN):
 		#CAPTURE EN PASSANT
 		if(target==GlobalVars.enPassant):
@@ -76,7 +66,7 @@ func moveTo(target):
 			GlobalVars.enPassantTarget = target
 		#PAWN PROMOTION
 		if(target[1] == "1" or target[1] == "8"):
-			if(promoteType == null): promote()
+			if(promoType == null): promote()
 	#CAPTURES
 	var occupant = GlobalVars.isSquareOccupied(target)
 	if(occupant != null): occupant.capture()
@@ -93,7 +83,7 @@ func capture():
 func promote():
 	print("promote")
 	$PromotionWindow.visible=true
-	promoteType = GlobalVars.PAWN
+	promoType = GlobalVars.PAWN
 
 func calculateLegalMoves(onlyAttack):
 	var moves = []
@@ -114,14 +104,14 @@ func calculateLegalMoves(onlyAttack):
 				var hFile = GlobalVars.convertIndex(file+3,rank)
 				if(GlobalVars.isSquareOccupied(fFile)==null and GlobalVars.isSquareOccupied(gFile)==null):
 					var rook = GlobalVars.isSquareOccupied(hFile)
-					if(rook != null and !rook.moved): moves.push_back("0-0")
+					if(rook != null and !rook.moved): moves.push_back("g"+occupiedSquare[1])#O-O
 				var dFile = GlobalVars.convertIndex(file-1,rank)
 				var cFile = GlobalVars.convertIndex(file-2,rank)
 				var bFile = GlobalVars.convertIndex(file-3,rank)
 				var aFile = GlobalVars.convertIndex(file-4,rank)
 				if(GlobalVars.isSquareOccupied(dFile)==null and GlobalVars.isSquareOccupied(cFile)==null and GlobalVars.isSquareOccupied(bFile)==null):
 					var rook = GlobalVars.isSquareOccupied(aFile)
-					if(rook != null and !rook.moved): moves.push_back("0-0-0")
+					if(rook != null and !rook.moved): moves.push_back("c"+occupiedSquare[1])#O-O-O
 		[GlobalVars.QUEEN]:
 			pattern += [[1,1],[1,-1],[-1,1],[-1,-1]]
 			pattern += [[0,1],[0,-1],[-1,0],[1,0]]
@@ -234,10 +224,10 @@ func _on_Area2D_input_event(_viewport, event, _shape_idx):
 		clicked = false;
 
 func _on_Queen_pressed():
-	promoteType = GlobalVars.QUEEN
+	promoType = GlobalVars.QUEEN
 func _on_Rook_pressed():
-	promoteType = GlobalVars.ROOK
+	promoType = GlobalVars.ROOK
 func _on_Bishop_pressed():
-	promoteType = GlobalVars.BISHOP
+	promoType = GlobalVars.BISHOP
 func _on_Knight_pressed():
-	promoteType = GlobalVars.KNIGHT
+	promoType = GlobalVars.KNIGHT
