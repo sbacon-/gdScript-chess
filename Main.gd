@@ -2,7 +2,8 @@ extends Node2D
 
 var activePlayer = GlobalVars.WHITE
 
-var moveQueue = []
+var uciMoveQueue = []
+var sanMoveQueue = []
 
 func _ready():
 	reset()
@@ -10,7 +11,8 @@ func _ready():
 func reset():
 	setupBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
 	activePlayer = GlobalVars.WHITE
-	moveQueue.clear()
+	uciMoveQueue.clear()
+	sanMoveQueue.clear()
 	$Camera2D/MoveInput.grab_focus()
 
 func setupBoard(fen):
@@ -35,25 +37,22 @@ func parseUCI(text):
 	var from = text.substr(0,2)
 	var to = text.substr(2,2)
 	var promote = text.substr(text.length()-1)
-	
 	var piece = GlobalVars.isSquareOccupied(from)
 	if piece==null: return
-	
 	if piece.calculateLegalMoves(false).find(to)==-1: return
-	
 	if piece.getPieceType()==GlobalVars.PAWN and (to[1]=="1" or to[1]=="8"):
 		var options = ["Q","R","B","N"]
 		promote = promote.to_upper()
 		if options.find(promote)==-1: return
 		piece.promoType = GlobalVars.pieceSTR.find(promote)
 		piece.moveTo(to)
-	
 	$Camera2D/MoveInput.clear()
 	piece.targetSquare = to
-	moveQueue.push_back(text)
-	print(moveQueue)
+	uciMoveQueue.push_back(text)
+	sanMoveQueue.push_back(properSAN(from,to,promote))
 
 func parseSAN(text):
+	var original = text
 	var implied = ["x","+","#","="]
 	for i in implied:
 		text = text.replace(i,"")
@@ -64,25 +63,73 @@ func parseSAN(text):
 	else: 
 		to = text.substr(text.length()-2,2)
 		promote = ""
-	var candidates = []
 	var info = text.rstrip(promote)
 	info = info.rstrip(to)
-	if GlobalVars.pieceSTR.find(info.substr(0,1)) == -1:
-		info = "P"+info
-	for p in GlobalVars.pieces:
-		if  p.getColor()==activePlayer and p.getPieceType()==GlobalVars.pieceSTR.find(info.substr(0,1)):
-			if (p.calculateLegalMoves(false).find(to)!=-1):
-				candidates.push_back(p)
+	var type = info.substr(0,1)
+	if GlobalVars.pieceSTR.find(type) == -1:
+		type = "P"
+	if original=="0-0" or original == "0-0-0":
+		type="K"
+		if(activePlayer == GlobalVars.WHITE):
+			if original == "0-0": to = "g1"
+			if original == "0-0-0": to = "c1"
+		if(activePlayer == GlobalVars.BLACK):
+			if original == "0-0": to = "g8"
+			if original == "0-0-0": to = "c8"
+	var candidates = getMoveCandidates(GlobalVars.pieceSTR.find(type),to)
 	info = info.substr(1)
 	if candidates.size()>1 and !info.empty():
-		var newCandidates = []
+		var fileCandidates=[]
+		var rankCandidates=[]
 		for c in candidates:
-			if c.occupiedSquare[0]==info or c.occupiedSquare[1]==info or c.occupiedSquare==info:
-				newCandidates.push_back(c)
-		candidates=newCandidates
-	if candidates.size()==1:
-		from = candidates[0].occupiedSquare
+			if c.occupiedSquare[0]==info : fileCandidates.push_back(c)
+			if c.occupiedSquare[1]==info : rankCandidates.push_back(c)
+		if(fileCandidates.size()==1):from = fileCandidates[0].occupiedSquare
+		elif(rankCandidates.size()==1):from = rankCandidates[0].occupiedSquare
+		else: from = info
+	elif(candidates.size()==1): from = candidates[0].occupiedSquare
+	var san = properSAN(from,to,promote)
+	if original == san:
 		parseUCI(from+to+promote)
+
+func properSAN(from,to,promote):
+	var sanText
+	var piece = GlobalVars.isSquareOccupied(from)
+	if(piece==null): return
+	var capture = GlobalVars.isSquareOccupied(to)
+	var type = GlobalVars.pieceSTR[piece.getPieceType()]
+	if(type=="P"):
+		if(capture!=null): sanText=(from[0]+"x"+to)
+		else: sanText=to
+		var options = ["Q","R","B","N"]
+		if(to[1]=="1" or to[1]=="8"):
+			if(options.find(promote.to_upper())!=-1): 
+				sanText+=("="+promote.to_upper())
+	else:
+		sanText = type+to
+		if(capture!=null):
+			sanText=sanText.insert(sanText.length()-2,"x")
+		var candidates = getMoveCandidates(GlobalVars.pieceSTR.find(type),to)
+		if(candidates.size()>1):
+			var fileCandidates=[]
+			var rankCandidates=[]
+			for c in candidates:
+				if c.occupiedSquare[0]==from[0] : fileCandidates.push_back(c)
+				if c.occupiedSquare[1]==from[1] : rankCandidates.push_back(c)
+			if(fileCandidates.size()==1):sanText=sanText.insert(1,from[0])
+			elif(rankCandidates.size()==1):sanText=sanText.insert(1,from[1])
+			else: sanText=sanText.insert(1,from)
+	if(type=="K" and !piece.moved and to=="g"+from[1]): return "0-0"
+	if(type=="K" and !piece.moved and to=="c"+from[1]): return "0-0-0"
+	return sanText
+
+func getMoveCandidates(type,to):
+	var candidates = []
+	for p in GlobalVars.pieces:
+		if(p.getColor()==activePlayer and p.getPieceType()==type):
+			if(p.calculateLegalMoves(false).find(to)!=-1):
+				candidates.push_back(p)
+	return candidates
 
 func _on_Piece_Moved(piece):
 	#OPPONENTS TURN
