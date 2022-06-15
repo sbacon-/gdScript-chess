@@ -1,19 +1,29 @@
 extends Node2D
 
+export (PackedScene) var moveNavigation
+var moveQueueDisplay
+var moveQueueSet
+var moveInput
+
 var activePlayer = GlobalVars.WHITE
+
+var moveNumber = 0
 
 var uciMoveQueue = []
 var sanMoveQueue = []
+var fenMoveQueue = []
 
 func _ready():
+	moveQueueDisplay = $Camera2D/UI/RightBG/Scroll/VBox
+	moveInput = $Camera2D/UI/MoveInput
 	reset()
 
 func reset():
-	setupBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
+	setupBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -")
 	activePlayer = GlobalVars.WHITE
 	uciMoveQueue.clear()
 	sanMoveQueue.clear()
-	$Camera2D/MoveInput.grab_focus()
+	moveInput.grab_focus()
 
 func setupBoard(fen):
 	GlobalVars.parseFEN(fen);
@@ -46,10 +56,19 @@ func parseUCI(text):
 		if options.find(promote)==-1: return
 		piece.promoType = GlobalVars.pieceSTR.find(promote)
 		piece.moveTo(to)
-	$Camera2D/MoveInput.clear()
+	moveInput.clear()
 	piece.targetSquare = to
 	uciMoveQueue.push_back(text)
 	sanMoveQueue.push_back(properSAN(from,to,promote))
+	fenMoveQueue.push_back(GlobalVars.constructFen(activePlayer))
+	if(moveNumber%2==0):
+		moveQueueSet = HBoxContainer.new()
+		moveQueueDisplay.add_child(moveQueueSet)
+	var move = Button.new()
+	move.text = sanMoveQueue[moveNumber]
+	move.rect_size.x = moveQueueDisplay.rect_size.x/2
+	moveQueueSet.add_child(move)
+	moveNumber+=1
 
 func parseSAN(text):
 	var original = text
@@ -141,7 +160,10 @@ func _on_MoveInput_text_changed(new_text):
 	if new_text=="":return
 	if new_text.to_lower()=="reset":
 		reset()
-		$Camera2D/MoveInput.clear()
+		moveInput.clear()
+	if new_text.to_lower()=="fen":
+		print( GlobalVars.constructFen(activePlayer)) 
+		moveInput.clear()
 	parseMove(new_text)
 
 func _on_Button_pressed():

@@ -16,17 +16,53 @@ __meta__ = {
 rotating = true
 current = true
 
-[node name="MoveInput" parent="Camera2D" instance=ExtResource( 3 )]
-margin_top = 265.0
-
-[node name="Button" type="Button" parent="Camera2D"]
+[node name="UI" type="Control" parent="Camera2D"]
+anchor_left = 0.5
 anchor_top = 0.5
+anchor_right = 0.5
 anchor_bottom = 0.5
-margin_left = -488.0
-margin_top = -287.0
-margin_right = -452.0
-margin_bottom = -255.0
+margin_left = -512.0
+margin_top = -300.0
+margin_right = 512.0
+margin_bottom = 300.0
+mouse_filter = 2
+
+[node name="RightBG" type="ColorRect" parent="Camera2D/UI"]
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -240.0
+color = Color( 0.682353, 0.682353, 0.682353, 1 )
+
+[node name="Scroll" type="ScrollContainer" parent="Camera2D/UI/RightBG"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 16.0
+margin_top = 16.0
+margin_right = -16.0
+margin_bottom = -16.0
+
+[node name="VBox" type="VBoxContainer" parent="Camera2D/UI/RightBG/Scroll"]
+
+[node name="LeftBG" type="ColorRect" parent="Camera2D/UI"]
+anchor_bottom = 1.0
+margin_right = 240.0
+color = Color( 0.682353, 0.682353, 0.682353, 1 )
+
+[node name="Button" type="Button" parent="Camera2D/UI/LeftBG"]
+margin_left = 16.0
+margin_top = 16.0
+margin_right = 64.0
+margin_bottom = 48.0
 text = "Flip"
 
-[connection signal="text_changed" from="Camera2D/MoveInput" to="." method="_on_MoveInput_text_changed"]
-[connection signal="pressed" from="Camera2D/Button" to="." method="_on_Button_pressed"]
+[node name="MoveInput" parent="Camera2D/UI" instance=ExtResource( 3 )]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_top = -32.0
+margin_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[connection signal="pressed" from="Camera2D/UI/LeftBG/Button" to="." method="_on_Button_pressed"]
+[connection signal="text_changed" from="Camera2D/UI/MoveInput" to="." method="_on_MoveInput_text_changed"]

@@ -52,6 +52,7 @@ func parseFEN(fen):
 	for p in pieces:
 		p.queue_free()
 	pieces.clear()
+	var activePlayer = null
 	var arr = fen.split('/')
 	var rank=8
 	for a in arr:
@@ -74,6 +75,78 @@ func parseFEN(fen):
 			file+=1
 		rank-=1
 	if(tempFlip): flipBoard()
+	var extras = fen.split(' ');
+	"""ACTIVE PLAYER"""
+	if (extras[1]=="w"): activePlayer = WHITE;
+	if (extras[1]=="b"): activePlayer = BLACK;
+	"""CASTLING RIGHTS"""
+	var castlers = ["e1","h1","a1","e8","h8","a8"]
+	for c in castlers:
+		isSquareOccupied(c).moved=true;
+	if (extras[2].find("K")!=-1):
+		isSquareOccupied("e1").moved = false;
+		isSquareOccupied("h1").moved = false;
+	if (extras[2].find("Q")!=-1):
+		isSquareOccupied("e1").moved = false;
+		isSquareOccupied("a1").moved = false;
+	if (extras[2].find("k")!=-1):
+		isSquareOccupied("e8").moved = false;
+		isSquareOccupied("h8").moved = false;
+	if (extras[2].find("q")!=-1):
+		isSquareOccupied("e8").moved = false;
+		isSquareOccupied("a8").moved = false;
+	"""EN PASSANT"""
+	if (extras[3]!="-"):
+		enPassant = extras[3]
+		if (enPassant.ends_with("3")):
+			enPassantTarget = enPassant[0]+"4"
+		if (enPassant.ends_with("6")):
+			enPassantTarget = enPassant[0]+"5"
+
+func constructFen(activePlayer):
+	var fen = ""
+	var tempFlip = false
+	if(files[0]=="h"):
+		flipBoard()
+		tempFlip = true
+	for r in range(8,0,-1):
+		var emptyCounter = 0
+		for f in files:
+			var square = isSquareOccupied(f+String(r))
+			if(square==null):
+				emptyCounter+=1
+			else:
+				if(emptyCounter>0): fen+=String(emptyCounter)
+				var piece = pieceSTR[square.getPieceType()]
+				if(square.getColor()==BLACK): 
+					piece = piece.to_lower()
+				fen+=piece
+				emptyCounter=0;
+		if(emptyCounter>0): fen+=String(emptyCounter)
+		if(r!=1): fen += '/'
+	if(tempFlip): flipBoard()
+	if(activePlayer==WHITE): fen+= " w"
+	if(activePlayer==BLACK): fen+= " b"
+	var castles = ""
+	if(!findKing(WHITE).moved):
+		var a = isSquareOccupied("a1")
+		var h = isSquareOccupied("h1")
+		if(h!=null and !h.moved):castles+="K"
+		if(a!=null and !a.moved):castles+="Q"
+	if(!findKing(BLACK).moved):
+		var a = isSquareOccupied("a8")
+		var h = isSquareOccupied("h8")
+		if(h!=null and !h.moved):castles+="k"
+		if(a!=null and !a.moved):castles+="q"
+	if(castles == ""):
+		fen += " -"
+	else:
+		fen += " "+castles
+	if(enPassant == ""):
+		fen += " -"
+	else:
+		fen+= " "+enPassant
+	return fen
 
 func createPiece(color,type,pos):
 	var p = pieceScene.instance()
