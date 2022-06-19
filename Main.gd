@@ -20,16 +20,19 @@ func _ready():
 
 func reset():
 	setupBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -")
-	activePlayer = GlobalVars.WHITE
+	moveNumber=0
 	uciMoveQueue.clear()
 	sanMoveQueue.clear()
+	fenMoveQueue.clear()
 	moveInput.grab_focus()
 
 func setupBoard(fen):
-	GlobalVars.parseFEN(fen);
+	activePlayer = GlobalVars.parseFEN(fen);
 	for piece in GlobalVars.pieces:
 		add_child(piece)
 		piece.connect("pieceMoved",self,"_on_Piece_Moved",[piece])
+		piece.connect("promoWait",self,"_on_Piece_PromoWait",[piece])
+		piece.connect("promoContinue",self,"_on_Piece_PromoContinue",[piece])
 	setPlayerTurn(activePlayer)
 
 func setPlayerTurn(color):
@@ -51,20 +54,24 @@ func parseUCI(text):
 	if piece==null: return
 	if piece.calculateLegalMoves(false).find(to)==-1: return
 	if piece.getPieceType()==GlobalVars.PAWN and (to[1]=="1" or to[1]=="8"):
+		
 		var options = ["Q","R","B","N"]
 		promote = promote.to_upper()
 		if options.find(promote)==-1: return
+		piece.promote()
 		piece.promoType = GlobalVars.pieceSTR.find(promote)
-		piece.moveTo(to)
 	moveInput.clear()
 	piece.targetSquare = to
 	uciMoveQueue.push_back(text)
 	sanMoveQueue.push_back(properSAN(from,to,promote))
-	fenMoveQueue.push_back(GlobalVars.constructFen(activePlayer))
+	for p in GlobalVars.pieces:
+		p.lock()
 	if(moveNumber%2==0):
 		moveQueueSet = HBoxContainer.new()
 		moveQueueDisplay.add_child(moveQueueSet)
 	var move = Button.new()
+	move.name = String(moveNumber)
+	move.connect("pressed",self,"_on_Move_Selected",[move])
 	move.text = sanMoveQueue[moveNumber]
 	move.rect_size.x = moveQueueDisplay.rect_size.x/2
 	moveQueueSet.add_child(move)
@@ -151,9 +158,27 @@ func getMoveCandidates(type,to):
 	return candidates
 
 func _on_Piece_Moved(piece):
+	if(!piece.locked): parseUCI(piece.uciMovement)
 	#OPPONENTS TURN
 	if activePlayer == GlobalVars.WHITE : activePlayer=GlobalVars.BLACK
 	else: activePlayer = GlobalVars.WHITE
+	setPlayerTurn(activePlayer)
+	fenMoveQueue.push_back(GlobalVars.constructFen(activePlayer))
+
+func _on_Piece_PromoWait(_piece):
+	for p in GlobalVars.pieces:
+		p.lock()
+
+func _on_Piece_PromoContinue(piece):
+	parseUCI(piece.uciMovement)
+
+func _on_Move_Selected(move):
+	activePlayer = GlobalVars.parseFEN(fenMoveQueue[int(move.name)])
+	for piece in GlobalVars.pieces:
+		add_child(piece)
+		piece.connect("pieceMoved",self,"_on_Piece_Moved",[piece])
+		piece.connect("promoWait",self,"_on_Piece_PromoWait",[piece])
+		piece.connect("promoContinue",self,"_on_Piece_PromoContinue",[piece])
 	setPlayerTurn(activePlayer)
 
 func _on_MoveInput_text_changed(new_text):
@@ -162,7 +187,6 @@ func _on_MoveInput_text_changed(new_text):
 		reset()
 		moveInput.clear()
 	if new_text.to_lower()=="fen":
-		print( GlobalVars.constructFen(activePlayer)) 
 		moveInput.clear()
 	parseMove(new_text)
 

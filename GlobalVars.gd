@@ -56,9 +56,12 @@ func parseFEN(fen):
 	var arr = fen.split('/')
 	var rank=8
 	for a in arr:
+		print(a)
 		var file = 1
+		var index = 0
 		while file<=8:
-			var c = a[file-1]
+			var c = a[index]
+			index+=1
 			if c.is_valid_integer():
 				file+=int(c)
 				continue
@@ -79,6 +82,7 @@ func parseFEN(fen):
 	"""ACTIVE PLAYER"""
 	if (extras[1]=="w"): activePlayer = WHITE;
 	if (extras[1]=="b"): activePlayer = BLACK;
+	print(activePlayer)
 	"""CASTLING RIGHTS"""
 	var castlers = ["e1","h1","a1","e8","h8","a8"]
 	for c in castlers:
@@ -102,6 +106,7 @@ func parseFEN(fen):
 			enPassantTarget = enPassant[0]+"4"
 		if (enPassant.ends_with("6")):
 			enPassantTarget = enPassant[0]+"5"
+	return activePlayer
 
 func constructFen(activePlayer):
 	var fen = ""

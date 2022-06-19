@@ -3,6 +3,8 @@ extends Node2D
 export (Array, Texture) var textures
 
 signal pieceMoved
+signal promoWait
+signal promoContinue
 
 var pieceType = GlobalVars.PAWN
 var pieceColor = GlobalVars.WHITE
@@ -11,6 +13,7 @@ var locked = true
 var moved = false
 var promoType = null
 
+var uciMovement = ""
 var occupiedSquare = "e2"
 var targetSquare = ""
 
@@ -21,10 +24,14 @@ func handleMovement():
 	if(promoType!=null):
 		var options = [GlobalVars.QUEEN,GlobalVars.ROOK,GlobalVars.BISHOP,GlobalVars.KNIGHT]
 		if(options.find(promoType)!=-1):
+			uciMovement+=GlobalVars.pieceSTR[promoType]
+			print(uciMovement)
+			emit_signal("promoContinue")
 			pieceType = promoType
 			promoType = null
 			$PromotionWindow.visible=false
 			updateSprite($Sprite,pieceType)
+			moveTo(targetSquare)
 			emit_signal("pieceMoved")
 		return
 	if(clicked):
@@ -40,8 +47,14 @@ func handleMovement():
 		targetSquare = ""
 	elif targetSquare!="":
 		if calculateLegalMoves(false).find(targetSquare)!=-1:
+			uciMovement = occupiedSquare+targetSquare
+			#PAWN PROMOTION
+			if(pieceType==GlobalVars.PAWN and (targetSquare[1] == "1" or targetSquare[1] == "8")): 
+				promote()
+				emit_signal("promoWait")
+				return
 			moveTo(targetSquare)
-			if(promoType==null):emit_signal("pieceMoved")
+			emit_signal("pieceMoved")
 		targetSquare = ""
 		z_index = 0;
 		position = GlobalVars.parseCoordinate(occupiedSquare)
@@ -64,9 +77,6 @@ func moveTo(target):
 		if(target[1] == "5" and !moved):#Black Pieces moving to the 5th rank
 			GlobalVars.enPassant = target[0]+"6"
 			GlobalVars.enPassantTarget = target
-		#PAWN PROMOTION
-		if(target[1] == "1" or target[1] == "8"):
-			if(promoType == null): promote()
 	#CAPTURES
 	var occupant = GlobalVars.isSquareOccupied(target)
 	if(occupant != null): occupant.capture()
@@ -81,7 +91,6 @@ func capture():
 	scale /= 2
 
 func promote():
-	print("promote")
 	$PromotionWindow.visible=true
 	promoType = GlobalVars.PAWN
 
