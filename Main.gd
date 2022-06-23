@@ -24,6 +24,8 @@ func reset():
 	uciMoveQueue.clear()
 	sanMoveQueue.clear()
 	fenMoveQueue.clear()
+	for child in moveQueueDisplay.get_children():
+		child.queue_free()
 	moveInput.grab_focus()
 
 func setupBoard(fen):
@@ -159,6 +161,7 @@ func getMoveCandidates(type,to):
 
 func _on_Piece_Moved(piece):
 	if(!piece.locked): parseUCI(piece.uciMovement)
+	piece.moveTo(piece.targetSquare)
 	#OPPONENTS TURN
 	if activePlayer == GlobalVars.WHITE : activePlayer=GlobalVars.BLACK
 	else: activePlayer = GlobalVars.WHITE

@@ -21,6 +21,7 @@ func _process(_delta):
 	handleMovement()
 
 func handleMovement():
+	#HANDLE PROMOTION WAITING
 	if(promoType!=null):
 		var options = [GlobalVars.QUEEN,GlobalVars.ROOK,GlobalVars.BISHOP,GlobalVars.KNIGHT]
 		if(options.find(promoType)!=-1):
@@ -31,9 +32,9 @@ func handleMovement():
 			promoType = null
 			$PromotionWindow.visible=false
 			updateSprite($Sprite,pieceType)
-			moveTo(targetSquare)
 			emit_signal("pieceMoved")
 		return
+	#CLICKING THE PIECES WILL CREATE A UCI MOVE (Interpreted after signal passed "pieceMoved")
 	if(clicked):
 		position=get_viewport().get_mouse_position()
 		position.x -= get_viewport_rect().size.x/2
@@ -42,19 +43,22 @@ func handleMovement():
 		position.y += GlobalVars.g_spriteWidth/2
 		z_index = 1;
 		targetSquare = GlobalVars.getNearestSquare(get_viewport().get_mouse_position())
+		uciMovement = occupiedSquare
 	elif targetSquare=="OOB":
 		position = GlobalVars.parseCoordinate(occupiedSquare)
 		targetSquare = ""
+		uciMovement = ""
 	elif targetSquare!="":
 		if calculateLegalMoves(false).find(targetSquare)!=-1:
-			uciMovement = occupiedSquare+targetSquare
+			uciMovement += targetSquare
 			#PAWN PROMOTION
 			if(pieceType==GlobalVars.PAWN and (targetSquare[1] == "1" or targetSquare[1] == "8")): 
 				promote()
 				emit_signal("promoWait")
 				return
-			moveTo(targetSquare)
 			emit_signal("pieceMoved")
+		else:
+			uciMovement = ""
 		targetSquare = ""
 		z_index = 0;
 		position = GlobalVars.parseCoordinate(occupiedSquare)
@@ -85,9 +89,10 @@ func moveTo(target):
 	position = GlobalVars.parseCoordinate(occupiedSquare)
 
 func capture():
-	occupiedSquare = "xx"
+	if getColor() == GlobalVars.BLACK: occupiedSquare = "xx"
+	if getColor() == GlobalVars.WHITE: occupiedSquare = "XX"
+	position = GlobalVars.parseCoordinate(occupiedSquare)
 	$Area2D.queue_free()
-	position = GlobalVars.graveYard(getColor())
 	scale /= 2
 
 func promote():

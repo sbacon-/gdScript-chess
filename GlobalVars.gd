@@ -15,8 +15,8 @@ var g_spriteWidth = 16;
 var g_boardWidth = g_spriteWidth*8;
 var g_scale = 4;
 
-var g_graveWhite = Vector2(1.1,-1) * g_boardWidth/2 * g_scale 
-var g_graveBlack = Vector2(1.1, 1) * g_boardWidth/2 * g_scale
+var g_graveWhite = Vector2(-1.2, 1) * g_boardWidth/2 * g_scale 
+var g_graveBlack = Vector2(-1.2, -1) * g_boardWidth/2 * g_scale
 
 var g_whiteColor = Color(0.8,0.8,0.8,1);
 var g_blackColor = Color(0.2,0.2,0.2,1);
@@ -26,6 +26,8 @@ var enPassant = ""
 var enPassantTarget = ""
 
 func parseCoordinate(coord):
+	if(coord=="xx"): return g_graveWhite
+	if(coord=="XX"): return g_graveBlack
 	var v2 = Vector2.ZERO
 	v2.x = files.find(coord[0])*g_spriteWidth*g_scale
 	v2.y = -ranks.find(int(coord[1]))*g_spriteWidth*g_scale
@@ -185,6 +187,9 @@ func flipBoard():
 	for r in ranks:
 		newranks.push_front(r)
 	ranks=newranks
+	var graveFlip = g_graveBlack
+	g_graveBlack = g_graveWhite
+	g_graveWhite = graveFlip
 	for p in pieces:
 		p.position = GlobalVars.parseCoordinate(p.occupiedSquare)
 
