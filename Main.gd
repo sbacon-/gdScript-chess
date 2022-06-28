@@ -64,13 +64,33 @@ func parseUCI(text):
 		piece.promoType = GlobalVars.pieceSTR.find(promote)
 	moveInput.clear()
 	piece.targetSquare = to
+	
+	##Handle New Variations by changing the moveNumber
+	if(uciMoveQueue.size()>moveNumber): uciMoveQueue.resize(moveNumber)
+	if(sanMoveQueue.size()>moveNumber): sanMoveQueue.resize(moveNumber)
+	if(fenMoveQueue.size()>moveNumber): fenMoveQueue.resize(moveNumber)
+	for set in moveQueueDisplay.get_children():
+		if set.get_child_count()==0:
+			print("DELETING: "-set.name)
+			set.name = "free"
+			set.queue_free()
+			continue
+		for move in set.get_children():
+			if(int(move.name)>=moveNumber):
+				moveQueueSet = set
+				move.name = "free"
+				move.queue_free()
+	
 	uciMoveQueue.push_back(text)
 	sanMoveQueue.push_back(properSAN(from,to,promote))
+	
 	for p in GlobalVars.pieces:
 		p.lock()
 	if(moveNumber%2==0):
 		moveQueueSet = HBoxContainer.new()
+		moveQueueSet.name = "MoveQueue: "+String(moveNumber/2)
 		moveQueueDisplay.add_child(moveQueueSet)
+	print(moveQueueSet.name)
 	var move = Button.new()
 	move.name = String(moveNumber)
 	move.connect("pressed",self,"_on_Move_Selected",[move])
@@ -177,6 +197,7 @@ func _on_Piece_PromoContinue(piece):
 
 func _on_Move_Selected(move):
 	activePlayer = GlobalVars.parseFEN(fenMoveQueue[int(move.name)])
+	moveNumber = int(move.name)+1
 	for piece in GlobalVars.pieces:
 		add_child(piece)
 		piece.connect("pieceMoved",self,"_on_Piece_Moved",[piece])
