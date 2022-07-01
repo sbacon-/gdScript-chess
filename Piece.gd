@@ -26,7 +26,6 @@ func handleMovement():
 		var options = [GlobalVars.QUEEN,GlobalVars.ROOK,GlobalVars.BISHOP,GlobalVars.KNIGHT]
 		if(options.find(promoType)!=-1):
 			uciMovement+=GlobalVars.pieceSTR[promoType]
-			print(uciMovement)
 			emit_signal("promoContinue")
 			pieceType = promoType
 			promoType = null

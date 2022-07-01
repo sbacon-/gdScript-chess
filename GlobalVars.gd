@@ -58,7 +58,6 @@ func parseFEN(fen):
 	var arr = fen.split('/')
 	var rank=8
 	for a in arr:
-		print(a)
 		var file = 1
 		var index = 0
 		while file<=8:
@@ -84,7 +83,6 @@ func parseFEN(fen):
 	"""ACTIVE PLAYER"""
 	if (extras[1]=="w"): activePlayer = WHITE;
 	if (extras[1]=="b"): activePlayer = BLACK;
-	print(activePlayer)
 	"""CASTLING RIGHTS"""
 	var castlers = ["e1","h1","a1","e8","h8","a8"]
 	for c in castlers:

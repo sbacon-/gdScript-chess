@@ -69,34 +69,30 @@ func parseUCI(text):
 	if(uciMoveQueue.size()>moveNumber): uciMoveQueue.resize(moveNumber)
 	if(sanMoveQueue.size()>moveNumber): sanMoveQueue.resize(moveNumber)
 	if(fenMoveQueue.size()>moveNumber): fenMoveQueue.resize(moveNumber)
-	for set in moveQueueDisplay.get_children():
-		if set.get_child_count()==0:
-			print("DELETING: "-set.name)
-			set.name = "free"
-			set.queue_free()
-			continue
-		for move in set.get_children():
-			if(int(move.name)>=moveNumber):
-				moveQueueSet = set
-				move.name = "free"
-				move.queue_free()
 	
 	uciMoveQueue.push_back(text)
 	sanMoveQueue.push_back(properSAN(from,to,promote))
+	fenMoveQueue.push_back(GlobalVars.constructFen(activePlayer))
 	
 	for p in GlobalVars.pieces:
 		p.lock()
-	if(moveNumber%2==0):
-		moveQueueSet = HBoxContainer.new()
-		moveQueueSet.name = "MoveQueue: "+String(moveNumber/2)
-		moveQueueDisplay.add_child(moveQueueSet)
-	print(moveQueueSet.name)
-	var move = Button.new()
-	move.name = String(moveNumber)
-	move.connect("pressed",self,"_on_Move_Selected",[move])
-	move.text = sanMoveQueue[moveNumber]
-	move.rect_size.x = moveQueueDisplay.rect_size.x/2
-	moveQueueSet.add_child(move)
+	
+	rebuildQueueDisplay()
+
+func rebuildQueueDisplay():
+	for set in moveQueueDisplay.get_children():
+		set.queue_free()
+	for mn in moveNumber+1:
+		if(mn%2==0):
+			moveQueueSet = HBoxContainer.new()
+			moveQueueSet.name = "MoveQueue: "+String(moveNumber/2)
+			moveQueueDisplay.add_child(moveQueueSet)
+		var move = Button.new()
+		move.name = String(mn)
+		move.connect("pressed",self,"_on_Move_Selected",[move])
+		move.text = sanMoveQueue[mn]
+		move.rect_size.x = moveQueueDisplay.rect_size.x/2
+		moveQueueSet.add_child(move)
 	moveNumber+=1
 
 func parseSAN(text):
@@ -180,13 +176,17 @@ func getMoveCandidates(type,to):
 	return candidates
 
 func _on_Piece_Moved(piece):
-	if(!piece.locked): parseUCI(piece.uciMovement)
+	print("MOVE" + String(activePlayer))
+	if(!piece.locked): 
+		setPlayerTurn(activePlayer)
+		parseUCI(piece.uciMovement)
 	piece.moveTo(piece.targetSquare)
 	#OPPONENTS TURN
 	if activePlayer == GlobalVars.WHITE : activePlayer=GlobalVars.BLACK
 	else: activePlayer = GlobalVars.WHITE
-	setPlayerTurn(activePlayer)
-	fenMoveQueue.push_back(GlobalVars.constructFen(activePlayer))
+	for p in GlobalVars.pieces:
+		if(p.getColor()==activePlayer): p.unlock()
+		else: p.lock()
 
 func _on_Piece_PromoWait(_piece):
 	for p in GlobalVars.pieces:
@@ -196,7 +196,8 @@ func _on_Piece_PromoContinue(piece):
 	parseUCI(piece.uciMovement)
 
 func _on_Move_Selected(move):
-	activePlayer = GlobalVars.parseFEN(fenMoveQueue[int(move.name)])
+	if fenMoveQueue.size()<moveNumber+1:fenMoveQueue.push_back(GlobalVars.constructFen(activePlayer))
+	activePlayer = GlobalVars.parseFEN(fenMoveQueue[int(move.name)+1])
 	moveNumber = int(move.name)+1
 	for piece in GlobalVars.pieces:
 		add_child(piece)
