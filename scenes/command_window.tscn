@@ -1,0 +1,187 @@
+[gd_scene load_steps=9 format=3 uid="uid://dt8nu3sdm2jbg"]
+
+[ext_resource type="FontFile" uid="uid://cj7apy386btr" path="res://assets/Tomorrow-Regular.ttf" id="1_fmdtw"]
+[ext_resource type="Script" uid="uid://bs0yywo243bvq" path="res://scripts/command_window.gd" id="2_s21kc"]
+[ext_resource type="Texture2D" uid="uid://erj2fsqwxc0h" path="res://assets/ui_colors.png" id="3_ajxgg"]
+
+[sub_resource type="Theme" id="Theme_iredo"]
+default_font = ExtResource("1_fmdtw")
+default_font_size = 24
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3snsm"]
+atlas = ExtResource("3_ajxgg")
+region = Rect2(0, 0, 1, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8bl6j"]
+atlas = ExtResource("3_ajxgg")
+region = Rect2(0, 4, 1, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_88222"]
+atlas = ExtResource("3_ajxgg")
+region = Rect2(0, 4, 1, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w7wso"]
+atlas = ExtResource("3_ajxgg")
+region = Rect2(0, 1, 1, 1)
+
+[node name="CommandWindow" type="Container"]
+custom_minimum_size = Vector2(420, 1048)
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 436.0
+offset_bottom = 1064.0
+theme = SubResource("Theme_iredo")
+script = ExtResource("2_s21kc")
+
+[node name="Background" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(420, 1048)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(0.239216, 0.239216, 0.239216, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+custom_minimum_size = Vector2(420, 1016)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = -16
+theme_override_constants/margin_bottom = 16
+
+[node name="VFlowContainer" type="VFlowContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/v_separation = 16
+
+[node name="ResetButton" type="TextureButton" parent="MarginContainer/VFlowContainer"]
+custom_minimum_size = Vector2(388, 52.5)
+layout_mode = 2
+size_flags_vertical = 4
+texture_normal = SubResource("AtlasTexture_3snsm")
+texture_pressed = SubResource("AtlasTexture_8bl6j")
+texture_hover = SubResource("AtlasTexture_88222")
+texture_disabled = SubResource("AtlasTexture_w7wso")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="MarginContainer/VFlowContainer/ResetButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Reset"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FlipButton" type="TextureButton" parent="MarginContainer/VFlowContainer"]
+custom_minimum_size = Vector2(388, 52.5)
+layout_mode = 2
+size_flags_vertical = 4
+texture_normal = SubResource("AtlasTexture_3snsm")
+texture_pressed = SubResource("AtlasTexture_8bl6j")
+texture_hover = SubResource("AtlasTexture_88222")
+texture_disabled = SubResource("AtlasTexture_w7wso")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="MarginContainer/VFlowContainer/FlipButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Flip"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AutoFlip" type="CheckButton" parent="MarginContainer/VFlowContainer"]
+custom_minimum_size = Vector2(388, 52.5)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VFlowContainer/AutoFlip"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "AutoFlip"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AutoSubmit" type="CheckButton" parent="MarginContainer/VFlowContainer"]
+custom_minimum_size = Vector2(388, 52.5)
+layout_mode = 2
+button_pressed = true
+
+[node name="Label" type="Label" parent="MarginContainer/VFlowContainer/AutoSubmit"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "AutoSubmit"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Mute" type="CheckButton" parent="MarginContainer/VFlowContainer"]
+custom_minimum_size = Vector2(388, 52.5)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VFlowContainer/Mute"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Mute Audio"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VFlowContainer"]
+custom_minimum_size = Vector2(388, 52.5)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Label" type="Label" parent="MarginContainer/VFlowContainer/HBoxContainer"]
+custom_minimum_size = Vector2(258, 52.5)
+layout_mode = 2
+text = "Board Color"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BoardColor" type="OptionButton" parent="MarginContainer/VFlowContainer/HBoxContainer"]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+selected = 0
+item_count = 5
+popup/item_0/text = "Black"
+popup/item_0/id = 0
+popup/item_1/text = "Brown"
+popup/item_1/id = 3
+popup/item_2/text = "Green"
+popup/item_2/id = 1
+popup/item_3/text = "Blue"
+popup/item_3/id = 2
+popup/item_4/text = "Purple"
+popup/item_4/id = 4
+
+[connection signal="pressed" from="MarginContainer/VFlowContainer/ResetButton" to="." method="_on_reset_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VFlowContainer/FlipButton" to="." method="_on_flip_button_pressed"]
+[connection signal="toggled" from="MarginContainer/VFlowContainer/AutoFlip" to="." method="_on_auto_flip_toggled"]
+[connection signal="toggled" from="MarginContainer/VFlowContainer/AutoSubmit" to="." method="_on_auto_submit_toggled"]
+[connection signal="toggled" from="MarginContainer/VFlowContainer/Mute" to="." method="_on_mute_toggled"]
+[connection signal="item_selected" from="MarginContainer/VFlowContainer/HBoxContainer/BoardColor" to="." method="_on_board_color_item_selected"]

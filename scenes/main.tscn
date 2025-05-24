@@ -1,0 +1,48 @@
+[gd_scene load_steps=10 format=3 uid="uid://b12jfuy3d6af0"]
+
+[ext_resource type="Script" uid="uid://swvw2slugrub" path="res://scripts/main.gd" id="1_0wfyh"]
+[ext_resource type="PackedScene" uid="uid://cxrnb62eym10o" path="res://scenes/board.tscn" id="1_o5qli"]
+[ext_resource type="PackedScene" uid="uid://bkw5yl7ih2bqt" path="res://scenes/move_list.tscn" id="3_sugp2"]
+[ext_resource type="PackedScene" uid="uid://dt8nu3sdm2jbg" path="res://scenes/command_window.tscn" id="4_jyhfs"]
+[ext_resource type="AudioStream" uid="uid://e8rcqs5bhwy3" path="res://assets/sounds/Capture.mp3" id="5_85g3d"]
+[ext_resource type="AudioStream" uid="uid://c4llsilcx0dc1" path="res://assets/sounds/Check.mp3" id="6_choun"]
+[ext_resource type="AudioStream" uid="uid://wmysraghs3ea" path="res://assets/sounds/Checkmate.mp3" id="7_ya4ey"]
+[ext_resource type="AudioStream" uid="uid://fk5a6yxyw2pl" path="res://assets/sounds/GenericNotify.mp3" id="8_eb6dy"]
+[ext_resource type="AudioStream" uid="uid://b1cbc8j7lox2q" path="res://assets/sounds/Move.mp3" id="9_trceg"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_0wfyh")
+
+[node name="Board" parent="." instance=ExtResource("1_o5qli")]
+
+[node name="Pieces" type="Node2D" parent="."]
+
+[node name="Graveyard" type="Node2D" parent="."]
+visible = false
+
+[node name="MoveList" parent="." instance=ExtResource("3_sugp2")]
+
+[node name="CommandWindow" parent="." instance=ExtResource("4_jyhfs")]
+
+[node name="Sounds" type="Node" parent="."]
+
+[node name="Capture" type="AudioStreamPlayer" parent="Sounds"]
+stream = ExtResource("5_85g3d")
+
+[node name="Check" type="AudioStreamPlayer" parent="Sounds"]
+stream = ExtResource("6_choun")
+
+[node name="Checkmate" type="AudioStreamPlayer" parent="Sounds"]
+stream = ExtResource("7_ya4ey")
+
+[node name="GenericNotify" type="AudioStreamPlayer" parent="Sounds"]
+stream = ExtResource("8_eb6dy")
+
+[node name="Move" type="AudioStreamPlayer" parent="Sounds"]
+stream = ExtResource("9_trceg")
+
+[connection signal="auto_flip_toggled" from="CommandWindow" to="." method="_on_command_window_auto_flip_toggled"]
+[connection signal="auto_submit_toggled" from="CommandWindow" to="." method="_on_command_window_auto_submit_toggled"]
+[connection signal="board_color_selected" from="CommandWindow" to="." method="_on_command_window_board_color_selected"]
+[connection signal="flip_button_pressed" from="CommandWindow" to="." method="_on_command_window_flip_button_pressed"]
+[connection signal="reset_button_pressed" from="CommandWindow" to="." method="_on_command_window_reset_button_pressed"]

@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://14w07t4h5qlr"]
+
+[ext_resource type="FontFile" uid="uid://cj7apy386btr" path="res://assets/Tomorrow-Regular.ttf" id="1_iswin"]
+
+[sub_resource type="Theme" id="Theme_p2i5p"]
+default_font = ExtResource("1_iswin")
+default_font_size = 30
+
+[node name="MoveLineEdit" type="LineEdit"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_p2i5p")
+alignment = 1
+keep_editing_on_text_submit = true

@@ -1,0 +1,24 @@
+[gd_scene load_steps=9 format=3 uid="uid://bmxd0wqi47ua8"]
+
+[ext_resource type="Script" uid="uid://dce401v42xm62" path="res://scripts/piece.gd" id="1_gebih"]
+[ext_resource type="Texture2D" uid="uid://dj5vs2j38i373" path="res://assets/pieces/king.png" id="2_4efup"]
+[ext_resource type="Texture2D" uid="uid://csik8lll24gqj" path="res://assets/pieces/pawn.png" id="2_s58gp"]
+[ext_resource type="Texture2D" uid="uid://6kyp2lp74dvc" path="res://assets/pieces/queen.png" id="3_ik1ys"]
+[ext_resource type="Texture2D" uid="uid://b3fbi27h1ams5" path="res://assets/pieces/bishop.png" id="4_at83j"]
+[ext_resource type="Texture2D" uid="uid://bp5qcyysyw0fu" path="res://assets/pieces/knight.png" id="5_gjaqj"]
+[ext_resource type="Texture2D" uid="uid://04g25hv5araw" path="res://assets/pieces/rook.png" id="6_d8lcj"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4efup"]
+size = Vector2(16, 16)
+
+[node name="piece" type="Node2D"]
+script = ExtResource("1_gebih")
+piece_textures = Array[Texture2D]([ExtResource("2_4efup"), ExtResource("3_ik1ys"), ExtResource("4_at83j"), ExtResource("5_gjaqj"), ExtResource("6_d8lcj"), ExtResource("2_s58gp")])
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("RectangleShape2D_4efup")
+
+[node name="Sprite2D" type="Sprite2D" parent="Area2D"]
+texture = ExtResource("2_s58gp")

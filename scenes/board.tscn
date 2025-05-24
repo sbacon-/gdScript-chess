@@ -1,0 +1,89 @@
+[gd_scene load_steps=10 format=3 uid="uid://cxrnb62eym10o"]
+
+[ext_resource type="Script" uid="uid://70siiv4ip88r" path="res://scenes/board.gd" id="1_bw3vb"]
+[ext_resource type="PackedScene" uid="uid://14w07t4h5qlr" path="res://scenes/move_line_edit.tscn" id="2_tx6nw"]
+[ext_resource type="Texture2D" uid="uid://dj5vs2j38i373" path="res://assets/pieces/king.png" id="3_nglv8"]
+[ext_resource type="Texture2D" uid="uid://6kyp2lp74dvc" path="res://assets/pieces/queen.png" id="3_wmvsh"]
+[ext_resource type="Texture2D" uid="uid://b3fbi27h1ams5" path="res://assets/pieces/bishop.png" id="4_n230i"]
+[ext_resource type="Texture2D" uid="uid://bp5qcyysyw0fu" path="res://assets/pieces/knight.png" id="5_ar2e0"]
+[ext_resource type="Texture2D" uid="uid://04g25hv5araw" path="res://assets/pieces/rook.png" id="6_pnb36"]
+[ext_resource type="Texture2D" uid="uid://csik8lll24gqj" path="res://assets/pieces/pawn.png" id="7_mvl7x"]
+[ext_resource type="FontFile" uid="uid://cj7apy386btr" path="res://assets/Tomorrow-Regular.ttf" id="9_n230i"]
+
+[node name="Board" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_bw3vb")
+board_color = Array[Color]([Color(0.866667, 0.866667, 0.866667, 1), Color(0.133333, 0.133333, 0.133333, 1)])
+piece_hint = Array[Resource]([ExtResource("3_nglv8"), ExtResource("3_wmvsh"), ExtResource("4_n230i"), ExtResource("5_ar2e0"), ExtResource("6_pnb36"), ExtResource("7_mvl7x")])
+
+[node name="Coordinates" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="MoveLineEdit" parent="." instance=ExtResource("2_tx6nw")]
+layout_mode = 0
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_right = 68.5625
+offset_bottom = 31.0
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="CoordinateLabels" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Hints" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Material" type="Control" parent="."]
+anchors_preset = 0
+
+[node name="BlackCaptures" type="HBoxContainer" parent="Material"]
+layout_direction = 3
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -11.5
+offset_right = 19.0
+offset_bottom = 11.5
+grow_vertical = 2
+alignment = 2
+
+[node name="Label" type="Label" parent="Material/BlackCaptures"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("9_n230i")
+text = "+0"
+
+[node name="WhiteCaptures" type="HBoxContainer" parent="Material"]
+layout_direction = 3
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -11.5
+offset_right = 19.0
+offset_bottom = 11.5
+grow_vertical = 2
+alignment = 2
+
+[node name="Label" type="Label" parent="Material/WhiteCaptures"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("9_n230i")
+text = "+0"
+
+[connection signal="text_changed" from="MoveLineEdit" to="." method="_on_move_line_edit_text_changed"]
+[connection signal="text_submitted" from="MoveLineEdit" to="." method="_on_move_line_edit_text_submitted"]

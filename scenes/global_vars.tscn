@@ -1,0 +1,26 @@
+[gd_scene load_steps=7 format=3 uid="uid://ct7463wbk7dkp"]
+
+[ext_resource type="Script" uid="uid://8svgnlsfwy6" path="res://scripts/global_vars.gd" id="1_q1wfp"]
+[ext_resource type="AudioStream" uid="uid://e8rcqs5bhwy3" path="res://assets/sounds/Capture.mp3" id="2_g6i4v"]
+[ext_resource type="AudioStream" uid="uid://c4llsilcx0dc1" path="res://assets/sounds/Check.mp3" id="3_wmw4h"]
+[ext_resource type="AudioStream" uid="uid://wmysraghs3ea" path="res://assets/sounds/Checkmate.mp3" id="4_1yw1h"]
+[ext_resource type="AudioStream" uid="uid://fk5a6yxyw2pl" path="res://assets/sounds/GenericNotify.mp3" id="5_8pneh"]
+[ext_resource type="AudioStream" uid="uid://b1cbc8j7lox2q" path="res://assets/sounds/Move.mp3" id="6_tgw3d"]
+
+[node name="GlobalVars" type="Node"]
+script = ExtResource("1_q1wfp")
+
+[node name="Capture" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_g6i4v")
+
+[node name="Check" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_wmw4h")
+
+[node name="Checkmate" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_1yw1h")
+
+[node name="GenericNotify" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_8pneh")
+
+[node name="Move" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("6_tgw3d")

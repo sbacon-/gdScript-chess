@@ -1,0 +1,93 @@
+[gd_scene load_steps=9 format=3 uid="uid://bkw5yl7ih2bqt"]
+
+[ext_resource type="FontFile" uid="uid://cj7apy386btr" path="res://assets/Tomorrow-Regular.ttf" id="1_kpesf"]
+[ext_resource type="Texture2D" uid="uid://erj2fsqwxc0h" path="res://assets/ui_colors.png" id="2_ed62s"]
+[ext_resource type="Script" uid="uid://c6ok5tugapk02" path="res://scripts/move_list.gd" id="2_huxp1"]
+
+[sub_resource type="Theme" id="Theme_huxp1"]
+default_font = ExtResource("1_kpesf")
+default_font_size = 24
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ed62s"]
+atlas = ExtResource("2_ed62s")
+region = Rect2(0, 0, 1, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_huxp1"]
+atlas = ExtResource("2_ed62s")
+region = Rect2(0, 4, 1, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pxmbw"]
+atlas = ExtResource("2_ed62s")
+region = Rect2(0, 4, 1, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kpesf"]
+atlas = ExtResource("2_ed62s")
+region = Rect2(0, 1, 1, 1)
+
+[node name="MoveList" type="ScrollContainer"]
+offset_left = 1484.0
+offset_top = 16.0
+offset_right = 1904.0
+offset_bottom = 1064.0
+script = ExtResource("2_huxp1")
+
+[node name="FlowContainer" type="FlowContainer" parent="."]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+theme = SubResource("Theme_huxp1")
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+
+[node name="MoveNumber" type="ColorRect" parent="FlowContainer"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+color = Color(0.239216, 0.239216, 0.239216, 1)
+
+[node name="Label" type="Label" parent="FlowContainer/MoveNumber"]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureButton" type="TextureButton" parent="FlowContainer"]
+custom_minimum_size = Vector2(194, 32)
+layout_mode = 2
+disabled = true
+texture_normal = SubResource("AtlasTexture_ed62s")
+texture_pressed = SubResource("AtlasTexture_huxp1")
+texture_hover = SubResource("AtlasTexture_pxmbw")
+texture_disabled = SubResource("AtlasTexture_kpesf")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="FlowContainer/TextureButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+vertical_alignment = 1
+
+[node name="w1" type="TextureButton" parent="FlowContainer"]
+custom_minimum_size = Vector2(194, 32)
+layout_mode = 2
+disabled = true
+texture_normal = SubResource("AtlasTexture_ed62s")
+texture_pressed = SubResource("AtlasTexture_huxp1")
+texture_hover = SubResource("AtlasTexture_pxmbw")
+texture_disabled = SubResource("AtlasTexture_kpesf")
+stretch_mode = 0
+
+[node name="Label" type="Label" parent="FlowContainer/w1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -226.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_alignment = 1
+vertical_alignment = 1
